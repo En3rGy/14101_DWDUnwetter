@@ -70,7 +70,7 @@ class DWDUnwetter_14101_14101(hsl20_3.BaseModule):
             response_data = response.read()
         except Exception as e:
             self._set_output_value(self.PIN_O_BERROR, True)
-            self.DEBUG.add_message("Error connecting to www.dwd.de: " + str(e))
+            self.DEBUG.add_message("14101 " + self.m_sCityId + ": Error connecting to www.dwd.de: " + str(e))
         return response_data
 
     def getCityJson(self, sJson, sCityId):
@@ -135,8 +135,9 @@ class DWDUnwetter_14101_14101(hsl20_3.BaseModule):
     # "start":1578765600 000,"end":1578823200 000
     def isWarningActive(self, nStart, nEnd):
         currentTime = time.localtime()
-        return ((time.localtime(nEnd / 1000) > currentTime) and
-            (currentTime > time.localtime(nStart / 1000)))
+        endTime = time.localtime(nEnd / 1000)
+        startTime = time.localtime(nStart / 1000)
+        return ((currentTime > startTime) and (currentTime < endTime))
 
     def on_init(self):
         self.DEBUG = self.FRAMEWORK.create_debug_section()
@@ -144,6 +145,7 @@ class DWDUnwetter_14101_14101(hsl20_3.BaseModule):
     def on_input_value(self, index, value):
         data = ""
         cityJson = "---"
+        
         self.m_sCityId = self._get_input_value(self.PIN_I_SCITYID)
 
         # retrieve city id if not done before
@@ -152,16 +154,19 @@ class DWDUnwetter_14101_14101(hsl20_3.BaseModule):
 
         if (self.m_sCityId == "0"):
             self._set_output_value(self.PIN_O_BERROR, True)
-            self.DEBUG.add_message("Could not retrieve City Id")
+            self.DEBUG.add_message("14101 " + self.m_sCityId + ": Could not retrieve City Id")
             return
 
         # get json date if triggered
         if (index == self.PIN_I_NTRIGGER) and (value == True):
+            self.DEBUG.add_message("14101 " + self.m_sCityId + ": Requesting DWD data.")
             data = self.getData()
-            cityJson = self.getCityJson(data, self._get_input_value( self.PIN_I_SCITYID))
+            cityJson = self.getCityJson(data, self.m_sCityId)
 
         # retrieve city data 
         if (cityJson != None):
+            self.DEBUG.add_message("14101 " + self.m_sCityId + ": Found data in json file.")
+            
             self.m_bValidData = True
             
             self._set_output_value(self.PIN_O_SJSON, cityJson)
@@ -172,7 +177,7 @@ class DWDUnwetter_14101_14101(hsl20_3.BaseModule):
                 grWarningsLst = json.loads(cityJson)
             except Exception as e:
                 self._set_output_value(self.PIN_O_BERROR, True)
-                self.DEBUG.set_value("Error", str(e))
+                self.DEBUG.set_value("14101 " + self.m_sCityId + ": Error", str(e))
                 return
 
             grRet = self.getMaxWarnLvl(grWarningsLst)
@@ -226,9 +231,10 @@ class DWDUnwetter_14101_14101(hsl20_3.BaseModule):
 
         # reset data if json does not contain city data
         else:
-            self.DEBUG.add_message("No data found in json file for requested region.")
+            self.DEBUG.add_message("14101 " + self.m_sCityId + ": No data for region found in json file.")
             
             if (self.m_bValidData == True):
+                self.DEBUG.add_message("14101 " + self.m_sCityId + ": Delete warn data.")
                 self.m_bValidData = False
                 self._set_output_value(self.PIN_O_SHEADLINE, "")
                 self._set_output_value(self.PIN_O_SDESCR, "")
