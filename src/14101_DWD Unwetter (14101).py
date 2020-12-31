@@ -5,6 +5,7 @@ import urllib2
 import ssl
 import urlparse
 import time
+from _ast import Or
 
 ##!!!!##################################################################################################
 #### Own written code can be placed above this commentblock . Do not change or delete commentblock! ####
@@ -98,9 +99,16 @@ class DWDUnwetter_14101_14101(hsl20_3.BaseModule):
         for i in range(0, len(grWarningsLst)):
             nLevel = self.getVal(grWarningsLst[i], "level")
 
-            if (nLevel>nMaxLvl) and (nLevel<=10) and (nLevel > 0):
-                nMaxLvl = nLevel
-                nIdxMaxLvl = i
+            if(nLevel<=10):
+                if((nMaxLvl<=10) and (nLevel>nMaxLvl) or
+                   (nMaxLvl>10)):
+                    nMaxLvl = nLevel
+                    nIdxMaxLvl = i
+
+            else:
+                if(nMaxLvl==0):
+                    nMaxLvl = nLevel
+                    nIdxMaxLvl = i
 
         return {"level":nMaxLvl, "idx":nIdxMaxLvl}
 
@@ -217,7 +225,7 @@ class DWDUnwetter_14101_14101(hsl20_3.BaseModule):
                 self._set_output_value(self.PIN_O_SLV3STR, sAllWarnings.encode("ascii", "xmlcharrefreplace"))
             elif(int(grRet["level"]) == 5):
                 self._set_output_value(self.PIN_O_SLV4STR, sAllWarnings.encode("ascii", "xmlcharrefreplace"))
-            elif(int(grRet["level"]) == 10):
+            elif(int(grRet["level"]) > 20):
                 self._set_output_value(self.PIN_O_SHEATWRNSTR, sAllWarnings.encode("ascii", "xmlcharrefreplace"))
             elif(int(grRet["level"]) == 20):
                 self._set_output_value(self.PIN_O_SUVWRNSTR, sAllWarnings.encode("ascii", "xmlcharrefreplace"))
