@@ -1,4 +1,9 @@
 # coding: UTF-8
+
+import unittest
+import datetime
+
+##########################################################
 import json
 import urllib
 import urllib2
@@ -6,6 +11,79 @@ import ssl
 import urlparse
 import time
 import calendar
+
+
+#########################################################
+
+class hsl20_4:
+    LOGGING_NONE = 0
+
+    def __init__(self):
+        pass
+
+    class BaseModule:
+        debug_output_value = {}
+        debug_set_remanent = {}
+        debug_input_value = {}
+
+        def __init__(self, a, b):
+            pass
+
+        def _get_framework(self):
+            f = hsl20_4.Framework()
+            return f
+
+        def _get_logger(self, a, b):
+            return 0
+
+        def _get_remanent(self, key):
+            return 0
+
+        def _set_remanent(self, key, val):
+            self.debug_set_remanent = val
+
+        def _set_output_value(self, pin, value):
+            self.debug_output_value[int(pin)] = value
+            print "# Out: " + str(value) + " @ pin " + str(pin)
+
+        def _get_input_value(self, pin):
+            if pin in self.debug_input_value:
+                return self.debug_input_value[pin]
+            else:
+                return 0
+
+    class Framework:
+        def __init__(self):
+            pass
+
+        def _run_in_context_thread(self, a):
+            pass
+
+        def create_debug_section(self):
+            d = hsl20_4.DebugHelper()
+            return d
+
+        def resolve_dns(self, a):
+            if a == 'maps.dwd.de':
+                return "141.38.3.18"
+            else:
+                return "127.0.0.1"
+
+    class DebugHelper:
+        def __init__(self):
+            pass
+
+        def set_value(self, cap, text):
+            print("DEBUG value\t'" + str(cap) + "': " + str(text))
+
+        def add_message(self, msg):
+            print("Debug Msg\t" + str(msg))
+
+        def add_exception(self, msg):
+            print("EXCEPTION Msg\t" + str(msg))
+
+
+#########################################################
 
 ##!!!!##################################################################################################
 #### Own written code can be placed above this commentblock . Do not change or delete commentblock! ####
@@ -39,9 +117,9 @@ class DWDUnwetter_14101_14101(hsl20_4.BaseModule):
         self.PIN_O_BERROR=16
         self.PIN_O_SJSON=17
 
-########################################################################################################
-#### Own written code can be placed after this commentblock . Do not change or delete commentblock! ####
-###################################################################################################!!!##
+    ########################################################################################################
+    #### Own written code can be placed after this commentblock . Do not change or delete commentblock! ####
+    ###################################################################################################!!!##
 
     # Warnungen vor extremem Unwetter(Stufe 4) - lila
     # Unwetterwarnungen(Stufe 3) -> rot
@@ -171,9 +249,9 @@ class DWDUnwetter_14101_14101(hsl20_4.BaseModule):
                 self.set_output_value_sbc(self.PIN_O_BACTIVE, warning_active)
                 self.warning_active = warning_active
 
-            self.set_output_value_sbc(self.PIN_O_SHEADLINE, str(headline).encode("ascii", "xmlcharrefreplace"))
-            self.set_output_value_sbc(self.PIN_O_SDESCR, str(descr).encode("ascii", "xmlcharrefreplace"))
-            self.set_output_value_sbc(self.PIN_O_SINSTR, str(instruction).encode("ascii", "xmlcharrefreplace"))
+            self.set_output_value_sbc(self.PIN_O_SHEADLINE, headline.encode("ascii", "xmlcharrefreplace"))
+            self.set_output_value_sbc(self.PIN_O_SDESCR, descr.encode("ascii", "xmlcharrefreplace"))
+            self.set_output_value_sbc(self.PIN_O_SINSTR, instruction.encode("ascii", "xmlcharrefreplace"))
             self.set_output_value_sbc(self.PIN_O_FSTART, start_time)
             self.set_output_value_sbc(self.PIN_O_FSTOP, stop_time)
             self.set_output_value_sbc(self.PIN_O_FLEVEL, level)
@@ -262,11 +340,52 @@ class DWDUnwetter_14101_14101(hsl20_4.BaseModule):
         self.warning_active = False
 
     def on_input_value(self, index, value):
-        city_json = "---"
-        city = self._get_input_value(self.PIN_I_SCITY) #
+        city = str(self._get_input_value(self.PIN_I_SCITY))
 
         # get json date if triggered
         if (index == self.PIN_I_NTRIGGER) and value:
-            self.DEBUG.add_message("14101 " + str(self._get_input_value(self.PIN_I_SCITY)) + ": Requesting DWD data.")
+            self.DEBUG.add_message("14101 " + city + ": Requesting DWD data.")
             data = self.get_data()
             self.read_json(data)
+
+################################################################################
+
+
+class TestSequenceFunctions(unittest.TestCase):
+    tst = DWDUnwetter_14101_14101(0)
+
+    def setUp(self):
+        print("\n###setUp")
+        with open("credentials.txt") as f:
+            self.cred = json.load(f)
+
+        self.tst = DWDUnwetter_14101_14101(0)
+        self.tst.on_init()
+
+        # self.tst.debug_input_value[self.tst.PIN_I_S_PW] = self.cred["PIN_I_S_PW"]
+
+    def test_get_data(self):
+        print("### test_get_data")
+        self.tst.debug_input_value[self.tst.PIN_I_SCITY] = "Stuttgart"
+        ret = self.tst.get_data()
+        print(ret)
+        self.assertNotEqual(ret, "")
+
+    def test_read_json(self):
+        print("### test_read_json")
+        json_example = open("Warnungen_Gemeinden.json", 'r+')
+        self.tst.read_json(json_example.read())
+        self.assertTrue(True)
+
+    def test_time_conversion(self):
+        print("### test_time_conversion")
+        ts = time.time()
+        utc_offset = (datetime.datetime.fromtimestamp(ts) - datetime.datetime.utcfromtimestamp(ts)).total_seconds()
+
+        in_time = "2021-06-28T18:17:00Z"
+        out_time = self.tst.conv_time(in_time) - utc_offset
+        res = 1624897020
+        self.assertEqual(res, out_time)
+
+if __name__ == '__main__':
+    unittest.main()
