@@ -55,6 +55,8 @@ Hinweis: Alle Textausgänge werden Umlaute und Sonderzeichen mit XML Reference C
 
 ### Change Log
 
+- v1.2
+    - Umstellung auf lokale Unwetterprognose (wfs Abfrage)
 - v1.1
     - Hitzewarnungen werden weiter gegeben
 - v1.0

@@ -6,6 +6,7 @@ import ssl
 import urlparse
 import time
 import calendar
+import threading
 
 ##!!!!##################################################################################################
 #### Own written code can be placed above this commentblock . Do not change or delete commentblock! ####
@@ -18,9 +19,8 @@ class DWDUnwetter_14101_14101(hsl20_4.BaseModule):
         hsl20_4.BaseModule.__init__(self, homeserver_context, "hsl20_3_dwd")
         self.FRAMEWORK = self._get_framework()
         self.LOGGER = self._get_logger(hsl20_4.LOGGING_NONE,())
-        self.PIN_I_NTRIGGER=1
-        self.PIN_I_SCITYID=2
-        self.PIN_I_SCITY=3
+        self.PIN_I_UDATE_RATE=1
+        self.PIN_I_SCITY=2
         self.PIN_O_SHEADLINE=1
         self.PIN_O_FLEVEL=2
         self.PIN_O_SDESCR=3
@@ -43,15 +43,16 @@ class DWDUnwetter_14101_14101(hsl20_4.BaseModule):
 #### Own written code can be placed after this commentblock . Do not change or delete commentblock! ####
 ###################################################################################################!!!##
 
-    # Warnungen vor extremem Unwetter(Stufe 4) - lila
-    # Unwetterwarnungen(Stufe 3) -> rot
-    # Warnungen vor markantem Wetter(Stufe 2) -> orange
-    # Wetterwarnungen(Stufe 1) -> gelb
+    # Warnungen vor extremem Unwetter (Stufe 4) - lila
+    # Unwetterwarnungen (Stufe 3) -> rot
+    # Warnungen vor markantem Wetter (Stufe 2) -> orange
+    # Wetterwarnungen (Stufe 1) -> gelb
     # Vorabinformation Unwetter -> rot gestreift
-    # Hitzewarnung(extrem) -> dunkles flieder
-    # Hitzewarnung -> helles flieder
-    # UV - Warnung -> rosa
+    # Hitzewarnung (extrem) -> dunkles flieder -> LEvel +20
+    # Hitzewarnung -> helles flieder -> Level +20
+    # UV - Warnung -> rosa -> Level 20
     # Keine Warnungen -> ---
+
 
     severity = {"Vorwarnung": 1, "-": 2, "Moderate": 3, "Severe": 4, "Extreme": 5}
 
@@ -107,12 +108,14 @@ class DWDUnwetter_14101_14101(hsl20_4.BaseModule):
 
     def read_json(self, json_data):
         data = json.loads(json_data)
+        self.set_output_value_sbc(self.PIN_O_SJSON, json_data)
         features_cnt = 0
         if "totalFeatures" in data:
             features_cnt = data["totalFeatures"]
             self.DEBUG.set_value("Features for " + str(self._get_input_value(self.PIN_I_SCITY)), features_cnt)
             if features_cnt == 0:
                 self.DEBUG.add_message("14101 " + str(self._get_input_value(self.PIN_I_SCITY)) + ": No warn data available.")
+                self.reset_outputs()
                 return
 
         else:
@@ -135,15 +138,13 @@ class DWDUnwetter_14101_14101(hsl20_4.BaseModule):
                     level = 0
                     if severity in self.severity:
                         level = self.severity[severity]
+                    else:
+                        level = -100
                     if feature_data["URGENCY"] == "Future":
                         level = 1
                     if level > max_level:
                         max_level = level
                         worst_data = feature_data
-
-                    # Hitzewarnung (extrem) -> Level +20
-                    # Hitzewarnung -> Level +20
-                    # UV-Warnung -> Level 20
 
                     worst_data["LEVEL"] = level
 
@@ -171,9 +172,9 @@ class DWDUnwetter_14101_14101(hsl20_4.BaseModule):
                 self.set_output_value_sbc(self.PIN_O_BACTIVE, warning_active)
                 self.warning_active = warning_active
 
-            self.set_output_value_sbc(self.PIN_O_SHEADLINE, str(headline).encode("ascii", "xmlcharrefreplace"))
-            self.set_output_value_sbc(self.PIN_O_SDESCR, str(descr).encode("ascii", "xmlcharrefreplace"))
-            self.set_output_value_sbc(self.PIN_O_SINSTR, str(instruction).encode("ascii", "xmlcharrefreplace"))
+            self.set_output_value_sbc(self.PIN_O_SHEADLINE, headline.encode("ascii", "xmlcharrefreplace"))
+            self.set_output_value_sbc(self.PIN_O_SDESCR, descr.encode("ascii", "xmlcharrefreplace"))
+            self.set_output_value_sbc(self.PIN_O_SINSTR, instruction.encode("ascii", "xmlcharrefreplace"))
             self.set_output_value_sbc(self.PIN_O_FSTART, start_time)
             self.set_output_value_sbc(self.PIN_O_FSTOP, stop_time)
             self.set_output_value_sbc(self.PIN_O_FLEVEL, level)
@@ -255,18 +256,29 @@ class DWDUnwetter_14101_14101(hsl20_4.BaseModule):
         self.set_output_value_sbc(self.PIN_O_SUVWRNSTR, "")
         self.set_output_value_sbc(self.PIN_O_SALLWRNSTR, "")
 
+    def update(self):
+        interval = self._get_input_value(self.PIN_I_UDATE_RATE)
+        if interval <= 0:
+            return
+
+        try:
+            self.DEBUG.add_message("14101 " + str(self._get_input_value(self.PIN_I_SCITY)) + ": Requesting DWD data.")
+            data = self.get_data()
+            self.read_json(data)
+        finally:
+            threading.Timer(interval, self.update).start()
+
     def on_init(self):
         self.DEBUG = self.FRAMEWORK.create_debug_section()
         self.g_out_sbc = {}
         self.valid_data = False
         self.warning_active = False
 
+        self.update()
+
     def on_input_value(self, index, value):
-        city_json = "---"
-        city = self._get_input_value(self.PIN_I_SCITY) #
+        # city = str(self._get_input_value(self.PIN_I_SCITY))
 
         # get json date if triggered
-        if (index == self.PIN_I_NTRIGGER) and value:
-            self.DEBUG.add_message("14101 " + str(self._get_input_value(self.PIN_I_SCITY)) + ": Requesting DWD data.")
-            data = self.get_data()
-            self.read_json(data)
+        if (index == self.PIN_I_UDATE_RATE) and value > 0:
+            self.update()

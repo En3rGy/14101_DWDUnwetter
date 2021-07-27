@@ -3,9 +3,8 @@
     <modules>
         <module category="Datenaustausch" context="hsl20_3_dwd" id="14101" name="DWD Unwetter (14101)" version="1.02">
             <inputs>
-                <input type="number" const_name="nTrigger" init_value="0">Trigger</input>			
-                <input type="string" const_name="sCityId" init_value="">Region Id</input>
-				<input type="string" const_name="sCity" init_value="">Region</input>
+                <input type="number" const_name="udate_rate" init_value="0">Update Rate [s]</input>
+				<input type="string" const_name="sCity" init_value="">Gemeinde</input>
             </inputs>
             <outputs>
 				<output type="string" const_name="sHeadline" init_value="">Überschrift</output>

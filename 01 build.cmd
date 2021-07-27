@@ -13,7 +13,7 @@ echo ^</head^> >> .\release\log14101.html
 
 @echo on
 
-type .\README.md | C:\Python27\python -m markdown -x tables >> .\release\log14100.html
+type .\README.md | C:\Python27\python -m markdown -x tables >> .\release\log14101.html
 
 cd ..\..
 C:\Python27\python generator.pyc "14101_DWDUnwetter" UTF-8
