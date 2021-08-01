@@ -233,7 +233,7 @@ class DWDUnwetter_14101_14101(hsl20_4.BaseModule):
             headline = worst_data["HEADLINE"]
             descr = worst_data["DESCRIPTION"]
             instruction = worst_data["INSTRUCTION"]
-            start_time = worst_data["EFFECTIVE"]
+            start_time = worst_data["ONSET"]
             start_time = self.conv_time(start_time)
             stop_time = worst_data["EXPIRES"]
             stop_time = self.conv_time(stop_time)
@@ -250,14 +250,21 @@ class DWDUnwetter_14101_14101(hsl20_4.BaseModule):
                 self.set_output_value_sbc(self.PIN_O_BACTIVE, warning_active)
                 self.warning_active = warning_active
 
-            self.set_output_value_sbc(self.PIN_O_SHEADLINE, headline.encode("ascii", "xmlcharrefreplace"))
-            self.set_output_value_sbc(self.PIN_O_SDESCR, descr.encode("ascii", "xmlcharrefreplace"))
-            self.set_output_value_sbc(self.PIN_O_SINSTR, instruction.encode("ascii", "xmlcharrefreplace"))
-            self.set_output_value_sbc(self.PIN_O_FSTART, start_time)
-            self.set_output_value_sbc(self.PIN_O_FSTOP, stop_time)
-            self.set_output_value_sbc(self.PIN_O_FLEVEL, level)
+            if headline:
+                self.set_output_value_sbc(self.PIN_O_SHEADLINE, headline.encode("ascii", "xmlcharrefreplace"))
+            if descr:
+                self.set_output_value_sbc(self.PIN_O_SDESCR, descr.encode("ascii", "xmlcharrefreplace"))
+            if instruction:
+                self.set_output_value_sbc(self.PIN_O_SINSTR, instruction.encode("ascii", "xmlcharrefreplace"))
+            if start_time:
+                self.set_output_value_sbc(self.PIN_O_FSTART, start_time)
+            if stop_time:
+                self.set_output_value_sbc(self.PIN_O_FSTOP, stop_time)
+            if level:
+                self.set_output_value_sbc(self.PIN_O_FLEVEL, level)
             self.set_output_value_sbc(self.PIN_O_BERROR, False)
-            self.set_output_value_sbc(self.PIN_O_SALLWRNSTR, all_warnings.encode("ascii", "xmlcharrefreplace"))
+            if all_warnings:
+                self.set_output_value_sbc(self.PIN_O_SALLWRNSTR, all_warnings.encode("ascii", "xmlcharrefreplace"))
             self.set_output_value_sbc(self.PIN_O_BACTIVE, warning_active)
 
             self.set_output_value_sbc(self.PIN_O_SHEATWRNSTR, "")
@@ -310,8 +317,8 @@ class DWDUnwetter_14101_14101(hsl20_4.BaseModule):
     # "start":1578765600 000,"end":1578823200 000
     def is_warning_active(self, start, end):
         current_time = time.localtime()
-        end_time = time.localtime(end / 1000)
-        start_time = time.localtime(start / 1000)
+        end_time = time.localtime(end)
+        start_time = time.localtime(start)
         return (current_time > start_time) and (current_time < end_time)
 
     def reset_outputs(self):
@@ -388,7 +395,14 @@ class TestSequenceFunctions(unittest.TestCase):
         print("### test_read_json")
         json_example = open("Warnungen_Gemeinden.json", 'r+')
         self.tst.read_json(json_example.read())
-        self.assertTrue(True)
+        self.assertTrue(self.tst.debug_output_value[self.tst.PIN_O_FLEVEL] == 1)
+
+    def test_resd_json2(self):
+        print("### test_read_json")
+        json_example = open("Warnungen_Gemeinden_2.json", 'r+')
+        self.tst.read_json(json_example.read())
+        self.assertTrue(self.tst.debug_output_value[self.tst.PIN_O_FSTART] == 1627758000)
+        self.assertTrue(self.tst.debug_output_value[self.tst.PIN_O_BACTIVE] )
 
     def test_time_conversion(self):
         print("### test_time_conversion")
@@ -400,5 +414,6 @@ class TestSequenceFunctions(unittest.TestCase):
         res = 1624897020
         self.assertEqual(res, out_time)
 
-if __name__ == '__main__':
-    unittest.main()
+    if __name__ == '__main__':
+        unittest.main()
+
