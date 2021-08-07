@@ -54,7 +54,7 @@ class DWDUnwetter_14101_14101(hsl20_4.BaseModule):
     # Keine Warnungen -> ---
 
 
-    severity = {"Vorwarnung": 1, "-": 2, "Moderate": 3, "Severe": 4, "Extreme": 5}
+    severity = {"Vorwarnung": 1, "Minor": 2, "Moderate": 3, "Severe": 4, "Extreme": 5}
 
     def set_output_value_sbc(self, pin, val):
         if pin in self.g_out_sbc:
@@ -126,7 +126,7 @@ class DWDUnwetter_14101_14101(hsl20_4.BaseModule):
         if "features" in data:
             features_data = data["features"]
             all_warnings = self.get_all_warnings(features_data)
-            self.set_output_value_sbc(self.PIN_O_SALLWRNSTR, all_warnings)
+            self.set_output_value_sbc(self.PIN_O_SALLWRNSTR, all_warnings.encode("ascii", "xmlcharrefreplace"))
 
             # find worst warning
             worst_data = {}
@@ -146,7 +146,7 @@ class DWDUnwetter_14101_14101(hsl20_4.BaseModule):
                         max_level = level
                         worst_data = feature_data
 
-                    worst_data["LEVEL"] = level
+                    worst_data["LEVEL"] = max_level
 
                 finally:
                     pass
