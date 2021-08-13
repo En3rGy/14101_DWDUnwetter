@@ -214,12 +214,16 @@ class DWDUnwetter_14101_14101(hsl20_4.BaseModule):
                     feature_data = features_data[i]["properties"]
                     severity = feature_data["SEVERITY"]
                     level = 0
-                    if severity in self.severity:
+
+                    if feature_data["URGENCY"] == "Future":
+                        level = 1
+                    elif feature_data["EC_GROUP"] == "HEAT":
+                        level = 20
+                    elif severity in self.severity:
                         level = self.severity[severity]
                     else:
                         level = -100
-                    if feature_data["URGENCY"] == "Future":
-                        level = 1
+
                     if level > max_level:
                         max_level = level
                         worst_data = feature_data
@@ -410,6 +414,13 @@ class TestSequenceFunctions(unittest.TestCase):
         self.tst.read_json(json_example.read())
         print("Level: " + str(self.tst.debug_output_value[self.tst.PIN_O_FLEVEL]))
         self.assertTrue(self.tst.debug_output_value[self.tst.PIN_O_FLEVEL] == 3)
+
+    def test_read_json4(self):
+        print("### test_read_json4")
+        json_example = open("Warnungen_Gemeinden_4.json", 'r+')
+        self.tst.read_json(json_example.read())
+        print("Level: " + str(self.tst.debug_output_value[self.tst.PIN_O_FLEVEL]))
+        self.assertTrue(self.tst.debug_output_value[self.tst.PIN_O_FLEVEL] == 20)
 
     def test_time_conversion(self):
         print("### test_time_conversion")
