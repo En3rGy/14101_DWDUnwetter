@@ -55,6 +55,8 @@ Hinweis: Alle Textausgänge werden Umlaute und Sonderzeichen mit XML Reference C
 
 ### Change Log
 
+- v1.4
+    - Bug: UV und Hitze Warnungenw erden in Leveln gem. Doku unterschieden
 - v1.2
     - Umstellung auf lokale Unwetterprognose (wfs Abfrage)
 - v1.1

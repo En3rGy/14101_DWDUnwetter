@@ -218,6 +218,13 @@ class DWDUnwetter_14101_14101(hsl20_4.BaseModule):
                     if feature_data["URGENCY"] == "Future":
                         level = 1
                     elif feature_data["EC_GROUP"] == "HEAT":
+                        if severity == "Minor":
+                            level = 21
+                        elif severity == "Severe":
+                            level = 22
+                        else:
+                            level = 21
+                    elif feature_data["EC_GROUP"] == "UV":
                         level = 20
                     elif severity in self.severity:
                         level = self.severity[severity]
@@ -390,7 +397,7 @@ class TestSequenceFunctions(unittest.TestCase):
 
     def test_get_data(self):
         print("### test_get_data")
-        self.tst.debug_input_value[self.tst.PIN_I_SCITY] = "Stuttgart"
+        self.tst.debug_input_value[self.tst.PIN_I_SCITY] = "Lörrach"
         ret = self.tst.get_data()
         print(ret)
         self.assertNotEqual(ret, "")

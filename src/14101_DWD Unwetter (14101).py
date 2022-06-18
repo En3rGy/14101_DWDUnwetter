@@ -42,7 +42,6 @@ class DWDUnwetter_14101_14101(hsl20_4.BaseModule):
 ########################################################################################################
 #### Own written code can be placed after this commentblock . Do not change or delete commentblock! ####
 ###################################################################################################!!!##
-
     # Warnungen vor extremem Unwetter (Stufe 4) - lila
     # Unwetterwarnungen (Stufe 3) -> rot
     # Warnungen vor markantem Wetter (Stufe 2) -> orange
@@ -140,6 +139,13 @@ class DWDUnwetter_14101_14101(hsl20_4.BaseModule):
                     if feature_data["URGENCY"] == "Future":
                         level = 1
                     elif feature_data["EC_GROUP"] == "HEAT":
+                        if severity == "Minor":
+                            level = 21
+                        elif severity == "Severe":
+                            level = 22
+                        else:
+                            level = 21
+                    elif feature_data["EC_GROUP"] == "UV":
                         level = 20
                     elif severity in self.severity:
                         level = self.severity[severity]
