@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <config>
     <modules>
-        <module category="Datenaustausch" context="hsl20_3_dwd" id="14101" name="DWD Unwetter (14101)" version="1.04">
+        <module category="Datenaustausch" context="hsl20_3_dwd" id="14101" name="DWD Unwetter (14101)" version="1.5">
             <inputs>
+				<input type="number" const_name="trigger" init_value="0">Datenabruf (1/0)</input>
                 <input type="number" const_name="udate_rate" init_value="0">Update Rate [s]</input>
 				<input type="string" const_name="sCity" init_value="">Gemeinde</input>
             </inputs>

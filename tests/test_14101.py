@@ -81,6 +81,15 @@ class UnitTests(unittest.TestCase):
         res = 1624897020
         self.assertEqual(res, out_time)
 
+    def test_trigger(self):
+        print("### test_trigger")
+        self.logic_module.debug_input_value[self.logic_module.PIN_I_SCITY] = "Lörrach"
+        self.logic_module.debug_input_value[self.logic_module.PIN_I_UDATE_RATE] = 0
+        self.logic_module.on_input_value(self.logic_module.PIN_I_TRIGGER, False)
+        self.assertEqual(len(self.logic_module.g_out_sbc), 0)
+        self.logic_module.on_input_value(self.logic_module.PIN_I_TRIGGER, True)
+        self.assertNotEqual(len(self.logic_module.g_out_sbc), 0)
+
     if __name__ == '__main__':
         unittest.main()
 

@@ -2,53 +2,56 @@
 
 ## Beschreibung 
 
-Der Baustein liest die [JSON-Daten zu aktuellen Unwetterwarnungen des DWD](https://www.dwd.de/DWD/warnungen/warnapp/json/warnings.json) aus und stellt die Informationen zur Verfügung.
+Der Baustein liest die [JSON-Daten zu aktuellen Unwetterwarnungen des DWD](https://www.dwd.de/DWD/warnungen/warnapp/json/warnings.json) aus und stellt die 
+Informationen zur Verfügung.
+
 Bei mehreren Warnungen wird die höchste Unwetterwarnung ausgegeben - unabhängig vom Warnzeitraum.
 
 ## Eingänge
 
-| Nr. | Name | Initialisierung | Beschreibung |
-| --- | ---  | --- | --- |
-| 1   | Trigger | 0 | Bei einem Wert =1 wird die aktuelle DWD-Json datei abgerfen und ausgewertet. |
-| 2 | Region Id | | *Id* der Region / Stadt / Landkreis aus der DWD-Json Datei, für die die Unwetterdaten ausgegeben werden sollen. |
-| 3 | Region | | *Name* der Region / Stadt / Landkreis aus der DWD-Json Datei, für die die Unwetterdaten ausgegeben werden sollen. Innerhalb der Json-Datei wird nach dem 1. Vorkommen des Namens gesucht. "Frankfurt" liefert die Ergebnisse für Frankfurt am Main oder Frankfurt an der Oder |
+| Nr. | Name            | Initialisierung | Beschreibung                                                                                                                                                                                                                         |
+|-----|-----------------|-----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1   | Datenabruf      | 0               | Bei einer 1 auf dem Eingang werden die aktuellen Daten vom DWD abgerufen.                                                                                                                                                            |  
+| 2   | Update Rate [s] | 0               | Intervall, indem dem die aktuelle DWD-Json Datei abgerufen und ausgewertet wird.                                                                                                                                                     |
+| 3   | Gemeinde        |                 | *Name* der Gemeinde, für die die Unwetterdaten ausgegeben werden sollen. Innerhalb der Json-Datei wird nach dem 1. Vorkommen des Namens gesucht. "Frankfurt" liefert die Ergebnisse für Frankfurt am Main oder Frankfurt an der Oder |
 
 
 ## Ausgänge
 
-Hinweis: Alle Textausgänge werden Umlaute und Sonderzeichen mit XML Reference Characters ersetzt nach dem Schema &amp#123;.
+Hinweis: Alle Textausgänge werden Umlaute und Sonderzeichen mit XML Reference Characters ersetzt nach 
+dem Schema &amp#123;.
 
 
-| Nr. | Name | Initialisierung | Beschreibung |
-| --- | --- | --- | --- |
-| 1   |Überschrift | | Überschrift der Unwetterwarnung. |
-| 2 | Level | 0 | Level der höchsten Unwetterwarnung für die Gemeinde / Stadt. | 
-| 3 | Beschreibung 	| | Beschreibung der Unwetterwarnung | 
-| 4 | Hinweise | | Handlungsempfehlungen für die Unwetterwarnung. | 
-| 5 | Startzeit | 0 | Start-Zeit des Warnfensters in s als [UNIX-Zeit](https://de.wikipedia.org/wiki/Unixzeit). |
-| 6 | Stoppzeit | 0 | Stop-Zeit des Warnfensters in s als [UNIX-Zeit](https://de.wikipedia.org/wiki/Unixzeit). |
-| 7 | Text alle Warnungen | | Text, der alle aktuell gemeldeten Warnereignisse auflistet. Leer, wenn keine Warnungen vorliegen. |
-| 8 | Text Wetterwarnung (Lv 1) | | Gibt eine Liste aller Warnereignisse aus, wenn das höchste Warnereignis dem DWD Level 1 (=2 am Ausgang Level) entspricht. Sonst wird ein leerer Text ausgegeben. |
-| 9 | Text Wetterwarnung (Lv 2) | | Gibt eine Liste aller Warnereignisse aus, wenn das höchste Warnereignis dem DWD Level 2 (=3 am Ausgang Level) entspricht. Sonst wird ein leerer Text ausgegeben. |
-| 10 | Text Wetterwarnung (Lv 3) | | Gibt eine Liste aller Warnereignisse aus, wenn das höchste Warnereignis dem DWD Level 3 (=4 am Ausgang Level) entspricht. Sonst wird ein leerer Text ausgegeben. |
-| 11 | Text Wetterwarnung (Lv 4) | | Gibt eine Liste aller Warnereignisse aus, wenn das höchste Warnereignis dem DWD Level 4 (=5 am Ausgang Level) entspricht. Sonst wird ein leerer Text ausgegeben. |
-| 12 | Text Vorabinformation Unwetter | | Gibt eine Liste aller Warnereignisse aus, wenn das höchste Warnereignis einer Vorwarnung entspricht (=1 am Ausgang Level). Sonst wird ein leerer Text ausgegeben. |
-| 13 | Text Hitzewarnung | | Gibt eine Liste aller Warnereignisse aus, wenn das höchste Warnereignis einer Hitzewarnung entspricht (=10 am Ausgang Level). Sonst wird ein leerer Text ausgegeben. |
-| 14 | Text UV-Warnung | | Gibt eine Liste aller Warnereignisse aus, wenn das höchste Warnereignis einer UV-Warnung entspricht (=20 am Ausgang Level). Sonst wird ein leerer Text ausgegeben. |
-| 15 | Warnung aktiv (sbc) | 0 | 1 wenn die aktuelle Zeit im Warnfenster liegt, also die Warnung akut ist. |
-| 16 | Error | 0 | 1 wenn ein Fehler vorliegt. Die HS-Debug-Seite (hs-ip/hslist?lst=debug)liefert in der Kategorie HSL 2.0 und der Unterkategorie hsl20_3_dwd mehr Details. |
-| 17 | Json | |  |
+| Nr. | Name                           | Initialisierung | Beschreibung                                                                                                                                                         |
+|-----|--------------------------------|-----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1   | Überschrift                    |                 | Überschrift der Unwetterwarnung.                                                                                                                                     |
+| 2   | Level                          | 0               | Level der höchsten Unwetterwarnung für die Gemeinde / Stadt.                                                                                                         | 
+| 3   | Beschreibung 	                 |                 | Beschreibung der Unwetterwarnung                                                                                                                                     | 
+| 4   | Hinweise                       |                 | Handlungsempfehlungen für die Unwetterwarnung.                                                                                                                       | 
+| 5   | Startzeit                      | 0               | Start-Zeit des Warnfensters in s als [UNIX-Zeit](https://de.wikipedia.org/wiki/Unixzeit).                                                                            |
+| 6   | Stoppzeit                      | 0               | Stop-Zeit des Warnfensters in s als [UNIX-Zeit](https://de.wikipedia.org/wiki/Unixzeit).                                                                             |
+| 7   | Text alle Warnungen            |                 | Text, der alle aktuell gemeldeten Warnereignisse auflistet. Leer, wenn keine Warnungen vorliegen.                                                                    |
+| 8   | Text Wetterwarnung (Lv 1)      |                 | Gibt eine Liste aller Warnereignisse aus, wenn das höchste Warnereignis dem DWD Level 1 (=2 am Ausgang Level) entspricht. Sonst wird ein leerer Text ausgegeben.     |
+| 9   | Text Wetterwarnung (Lv 2)      |                 | Gibt eine Liste aller Warnereignisse aus, wenn das höchste Warnereignis dem DWD Level 2 (=3 am Ausgang Level) entspricht. Sonst wird ein leerer Text ausgegeben.     |
+| 10  | Text Wetterwarnung (Lv 3)      |                 | Gibt eine Liste aller Warnereignisse aus, wenn das höchste Warnereignis dem DWD Level 3 (=4 am Ausgang Level) entspricht. Sonst wird ein leerer Text ausgegeben.     |
+| 11  | Text Wetterwarnung (Lv 4)      |                 | Gibt eine Liste aller Warnereignisse aus, wenn das höchste Warnereignis dem DWD Level 4 (=5 am Ausgang Level) entspricht. Sonst wird ein leerer Text ausgegeben.     |
+| 12  | Text Vorabinformation Unwetter |                 | Gibt eine Liste aller Warnereignisse aus, wenn das höchste Warnereignis einer Vorwarnung entspricht (=1 am Ausgang Level). Sonst wird ein leerer Text ausgegeben.    |
+| 13  | Text Hitzewarnung              |                 | Gibt eine Liste aller Warnereignisse aus, wenn das höchste Warnereignis einer Hitzewarnung entspricht (=10 am Ausgang Level). Sonst wird ein leerer Text ausgegeben. |
+| 14  | Text UV-Warnung                |                 | Gibt eine Liste aller Warnereignisse aus, wenn das höchste Warnereignis einer UV-Warnung entspricht (=20 am Ausgang Level). Sonst wird ein leerer Text ausgegeben.   |
+| 15  | Warnung aktiv (sbc)            | 0               | 1 wenn die aktuelle Zeit im Warnfenster liegt, also die Warnung akut ist.                                                                                            |
+| 16  | Error                          | 0               | 1 wenn ein Fehler vorliegt. Die HS-Debug-Seite (hs-ip/hslist?lst=debug)liefert in der Kategorie HSL 2.0 und der Unterkategorie hsl20_3_dwd mehr Details.             |
+| 17  | Json                           |                 |                                                                                                                                                                      |
 
 ## Beispielwerte
 
 | Eingang | Ausgang |
-| --- | --- |
-| - | - |
+|---------|---------|
+| -       | -       |
 
 
 ## Other
 
-- Neuberechnug beim Start: Nein
+- Neuberechnung beim Start: Nein
 - Baustein ist remanent: nein
 - Interne Bezeichnung: 14101
 - Kategorie: Datenaustausch

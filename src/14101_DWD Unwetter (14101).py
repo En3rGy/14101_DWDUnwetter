@@ -19,8 +19,9 @@ class DWDUnwetter_14101_14101(hsl20_4.BaseModule):
         hsl20_4.BaseModule.__init__(self, homeserver_context, "hsl20_3_dwd")
         self.FRAMEWORK = self._get_framework()
         self.LOGGER = self._get_logger(hsl20_4.LOGGING_NONE,())
-        self.PIN_I_UDATE_RATE=1
-        self.PIN_I_SCITY=2
+        self.PIN_I_TRIGGER=1
+        self.PIN_I_UDATE_RATE=2
+        self.PIN_I_SCITY=3
         self.PIN_O_SHEADLINE=1
         self.PIN_O_FLEVEL=2
         self.PIN_O_SDESCR=3
@@ -277,9 +278,11 @@ class DWDUnwetter_14101_14101(hsl20_4.BaseModule):
         self.set_output_value_sbc(self.PIN_O_SUVWRNSTR, "")
         self.set_output_value_sbc(self.PIN_O_SALLWRNSTR, "")
 
-    def update(self):
+    def update(self, force=False):
+        print("Entering update({})".format(force))
         interval = self._get_input_value(self.PIN_I_UDATE_RATE)
-        if interval <= 0:
+        if interval <= 0 and not force:
+            print("update | Aborting due to interval= {}".format(interval))
             return
 
         try:
@@ -298,8 +301,11 @@ class DWDUnwetter_14101_14101(hsl20_4.BaseModule):
         self.update()
 
     def on_input_value(self, index, value):
-        city = str(self._get_input_value(self.PIN_I_SCITY))
+        # city = str(self._get_input_value(self.PIN_I_SCITY))
 
         # get json date if triggered
-        if (index == self.PIN_I_UDATE_RATE) and value > 0:
+        if (index == self.PIN_I_UDATE_RATE) and int(value) > 0:
             self.update()
+
+        elif index == self.PIN_I_TRIGGER and bool(value):
+            self.update(force=True)
