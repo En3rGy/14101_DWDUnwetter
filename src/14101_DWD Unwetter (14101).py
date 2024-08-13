@@ -133,6 +133,7 @@ class DWDUnwetter_14101_14101(hsl20_4.BaseModule):
             for i in range(0, features_cnt):
                 try:
                     feature_data = features_data[i]["properties"]
+
                     severity = feature_data["SEVERITY"]
                     level = 0
 
@@ -152,7 +153,10 @@ class DWDUnwetter_14101_14101(hsl20_4.BaseModule):
                     else:
                         level = -100
 
-                    if level > max_level:
+                    if ((max_level < level < 20) or  # dont pririze heat events of other regular event exist
+                            (20 <= max_level < level) or  # but if only heat / uve events occur, take th worst
+                            (level < 20 <= max_level) or  # but if there is a regular event after a heat event, use this
+                            (max_level == 0)):  # but take something for init
                         max_level = level
                         worst_data = feature_data
 
